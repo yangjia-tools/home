@@ -147,6 +147,13 @@ def main():
     
     # 3. Merge
     print("\n[3/4] Merging and categorizing...")
+    if len(new_products) == 0:
+        print("  WARNING: 0 products scraped. Keeping existing data, NOT overwriting.")
+        log = {'last_sync': datetime.now().isoformat(), 'total_products': existing.get('total', 0), 'new_products': 0, 'status': 'scrape_failed'}
+        with open(SYNC_LOG, 'w', encoding='utf-8') as f:
+            json.dump(log, f, indent=2)
+        print(f"  Existing data preserved: {existing.get('total', 0)} products")
+        return log
     merged = merge_products(existing, new_products)
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(merged, f, ensure_ascii=False, indent=2)
