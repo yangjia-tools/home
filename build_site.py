@@ -1,7 +1,7 @@
 import json, os, sys
 
 # Portability: use script dir or passed arg
-BASE = os.path.dirname(os.path.abspath(__file__)) if '__file__' in dir() else os.getcwd()
+BASE = os.path.dirname(os.path.abspath(__file__))
 
 data_path = os.path.join(BASE, 'catalog_data.json')
 log_path = os.path.join(BASE, 'sync_log.json')
@@ -261,7 +261,7 @@ index.append('''
 </html>''')
 
 output = '\n'.join(index)
-out_path = r'C:\Users\Administrator/AccioWork/2026-07-04-16-44-08/index.html'
+out_path = os.path.join(BASE, 'index.html')
 with open(out_path, 'w', encoding='utf-8') as f:
     f.write(output)
 
