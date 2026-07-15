@@ -1,0 +1,50 @@
+name: Auto Sync Products
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Daily 8:00 UTC
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps chromium
+      
+      - name: Scrape store & sync products
+        run: python sync_site.py
+      
+      - name: Check for changes
+        id: check
+        run: |
+          if git diff --quiet catalog_data.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Rebuild website
+        if: steps.check.outputs.changed == 'true'
+        run: python build_site.py
+      
+      - name: Commit & push
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "auto-sync-bot"
+          git config user.email "bot@yinxiyangjia.tools"
+          git add catalog_data.json index.html sync_log.json
+          git commit -m "Auto-sync: $(date +'%Y-%m-%d') - $(cat sync_log.json | python -c 'import json,sys;d=json.load(sys.stdin);print(d.get(\"total_products\",\"?\"))') products"
+          git push
