@@ -198,7 +198,7 @@ for cat in cat_order:
         title = esc(title)
         img = p.get('imgUrl','')
         price = p.get('price','N/A')
-        moq = p.get('moq','N/A').replace('最低起订量： ', '')
+        moq = p.get('moq','N/A').replace('\u6700\u4f4e\u8d77\u8ba2\u91cf\uff1a ', '')
         url = p.get('url','#')
 
         index.append(f'''    <a href="{url}" target="_blank" class="product-card">
@@ -261,7 +261,7 @@ index.append('''
 </html>''')
 
 output = '\n'.join(index)
-out_path = 'index.html'
+out_path = r'C:\Users\Administrator/AccioWork/2026-07-04-16-44-08/index.html'
 with open(out_path, 'w', encoding='utf-8') as f:
     f.write(output)
 
