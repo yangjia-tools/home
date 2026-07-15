@@ -1,7 +1,20 @@
-import json
+import json, os, sys
 
-with open(r'C:\Users\Administrator/AccioWork/2026-07-04-16-44-08/catalog_data.json', 'r', encoding='utf-8') as f:
+# Portability: use script dir or passed arg
+BASE = os.path.dirname(os.path.abspath(__file__)) if '__file__' in dir() else os.getcwd()
+
+data_path = os.path.join(BASE, 'catalog_data.json')
+log_path = os.path.join(BASE, 'sync_log.json')
+
+with open(data_path, 'r', encoding='utf-8') as f:
     data = json.load(f)
+
+# Load sync time
+sync_time = ''
+if os.path.exists(log_path):
+    with open(log_path, 'r', encoding='utf-8') as f:
+        log = json.load(f)
+    sync_time = log.get('last_sync', '')[:16].replace('T', ' ')
 
 cats = data['categories']
 cat_order = sorted(cats.keys(), key=lambda k: -len(cats[k]))
@@ -185,7 +198,7 @@ for cat in cat_order:
         title = esc(title)
         img = p.get('imgUrl','')
         price = p.get('price','N/A')
-        moq = p.get('moq','N/A').replace('\u6700\u4f4e\u8d77\u8ba2\u91cf\uff1a ', '')
+        moq = p.get('moq','N/A').replace('最低起订量： ', '')
         url = p.get('url','#')
 
         index.append(f'''    <a href="{url}" target="_blank" class="product-card">
@@ -241,14 +254,14 @@ index.append('''
   <p>Factory-direct Power Tools &amp; Hardware Wholesale | OEM / ODM Supported</p>
   <p><a href="https://xj520520.en.alibaba.com" target="_blank" style="color:var(--accent);">xj520520.en.alibaba.com</a></p>
   <p style="margin-top:16px;">&copy; 2026 Yinxiyangjia Tools. All rights reserved.</p>
-  <p style="font-size:11px;color:var(--text3);margin-top:4px;">Auto-sync daily from Alibaba.com store</p>
+''' + (f'  <p style="font-size:11px;color:var(--text3);margin-top:4px;">Last synced: {sync_time} | Auto-update daily from Alibaba.com</p>' if sync_time else '  <p style="font-size:11px;color:var(--text3);margin-top:4px;">Auto-sync daily from Alibaba.com store</p>') + '''
 </div>
 
 </body>
 </html>''')
 
 output = '\n'.join(index)
-out_path = r'C:\Users\Administrator/AccioWork/2026-07-04-16-44-08/index.html'
+out_path = 'index.html'
 with open(out_path, 'w', encoding='utf-8') as f:
     f.write(output)
 
